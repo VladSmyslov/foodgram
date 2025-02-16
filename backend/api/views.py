@@ -1,21 +1,19 @@
-import short_url
+from django.db.models import Sum
 from django.http import HttpResponse
-from django.db.models import Exists, Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
 from djoser.views import UserViewSet
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
     IsAuthenticatedOrReadOnly
 )
+from rest_framework.response import Response
+
 from .permissions import IsAuthorOrReadOnly
-# from api.permissions import PostPermission
 from .filters import RecipeFilter
 from recipes.models import (
     Recipe,
@@ -28,7 +26,6 @@ from recipes.models import (
     Subscriptions
 )
 from api.serializers import (
-    Base64ImageField,
     RecipeListSerializer,
     RecipeSerializer,
     TagSerializer,

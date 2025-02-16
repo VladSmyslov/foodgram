@@ -1,14 +1,15 @@
 import base64
 
 from django.core.files.base import ContentFile
-
-from djoser.serializers import UserCreateSerializer
-
+from recipes.models import (Recipe,
+                            Tag,
+                            Ingredient,
+                            IngredientsRecipe,
+                            User,
+                            Favourites,
+                            ShopLsit,
+                            Subscriptions)
 from rest_framework import serializers
-
-from rest_framework.validators import UniqueTogetherValidator
-
-from recipes.models import Recipe, Tag, Ingredient, IngredientsRecipe, User, Favourites, ShopLsit, Subscriptions
 
 
 class Base64ImageField(serializers.ImageField):
@@ -143,7 +144,9 @@ class RecipeSerializer(serializers.ModelSerializer):
             'cooking_time',
             instance.cooking_time
         )
-        if not validated_data.get('tags') or not validated_data.get('ingredients'):
+        if not validated_data.get('tags') or not validated_data.get(
+            'ingredients'
+        ):
             raise serializers.ValidationError()
         tags = validated_data.pop('tags')
         instance.tags.set(tags)
@@ -185,8 +188,14 @@ class MyUserSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.first_name = validated_data.get(
+            'first_name',
+            instance.first_name
+        )
+        instance.last_name = validated_data.get(
+            'last_name',
+            instance.last_name
+        )
         instance.avatar = validated_data.get('avatar', instance.avatar)
         instance.save()
         return instance
@@ -224,23 +233,6 @@ class CreateSubscribeSerializer(serializers.ModelSerializer):
     def get_recipes_count(self, obj):
         recipes = Recipe.objects.filter(author=obj)
         return len(recipes)
-
-
-
-    """ def update(self, instance, validated_data):
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.avatar = validated_data.get('avatar', instance.avatar)
-        User.objects.filter(recipe=instance).delete()
-        ingredients = validated_data.pop('ingredients')
-        for ingredient in ingredients:
-            ingredient_id = ingredient['id']
-            amount = ingredient['amount']
-            current_ingredient = Ingredient.objects.get(pk=ingredient_id)
-            IngredientsRecipe.objects.create(
-                ingredient=current_ingredient, recipe=instance, amount=amount)
-        instance.save()
-        return instance """
 
     def get_is_subscribed(self, obj):
         return (True)

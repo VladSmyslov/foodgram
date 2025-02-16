@@ -15,11 +15,3 @@ class MyUser(AbstractUser):
     )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-
-
-""" class Subscription(models.Model):
-    subscription = models.ForeignKey(MyUser, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name = 'подписка'
-        verbose_name_plural = 'Подписки' """
