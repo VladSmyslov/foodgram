@@ -1,5 +1,6 @@
 import short_url
-from django.db.models import Exists
+from django.http import HttpResponse
+from django.db.models import Exists, Sum
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
@@ -19,6 +20,7 @@ from .filters import RecipeFilter
 from recipes.models import (
     Recipe,
     Ingredient,
+    IngredientsRecipe,
     Tag,
     User,
     Favourites,
@@ -112,13 +114,31 @@ class RecipesViewSet(viewsets.ModelViewSet):
             del_purchase.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def _create_shopping_txt(self, ingredients):
+        shopping_list = [
+            (f"{ingredient['name__name']}: "
+             f"{ingredient['total_amount']} "
+             f"{ingredient['name__measurement_unit']}\n")
+            for ingredient in ingredients
+        ]
+        return '\n'.join(shopping_list) + '\n'
+
     @action(
         methods=['get'],
         detail=False,
         permission_classes=(IsAuthenticated,)
     )
     def download_shopping_cart(self, request):
-        return Response(status=status.HTTP_200_OK)
+        user = request.user
+        ingredients = IngredientsRecipe.objects.filter(
+            recipe__shop_purchase__user=user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+
+        ).annotate(total=Sum('amount'))
+        shopping_list = self._create_shopping_txt(ingredients)
+        return HttpResponse(shopping_list, content_type='text/plain')
+        # return Response(status=status.HTTP_200_OK)
 
     @action(
         methods=['get'],
@@ -194,7 +214,10 @@ class MyUserViewSet(UserViewSet):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             # subscription.save()
             recipes_limit = request.query_params.get('recipes_limit')
-            serializer = CreateSubscribeSerializer(subscription_object, context={'request': request, 'recipes_limit': recipes_limit})
+            serializer = CreateSubscribeSerializer(
+                subscription_object,
+                context={'request': request, 'recipes_limit': recipes_limit}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             del_subscription = Subscriptions.objects.filter(

@@ -53,6 +53,7 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ['-id']
 
     def __str__(self):
         return self.name
@@ -71,13 +72,40 @@ class IngredientsRecipe(models.Model):
 
 
 class Favourites(models.Model):
-    user = models.ForeignKey(User, related_name='favourites_user', on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, related_name='favourites_recipe', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        related_name='favourites_user',
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='favourites_recipe',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = 'избранное'
+        verbose_name_plural = 'Избранное'
+
+    def __str__(self):
+        return self.recipe.name
 
 
 class ShopLsit(models.Model):
-    user = models.ForeignKey(User, related_name='shop_user', on_delete=models.CASCADE)
-    purchase = models.ForeignKey(Recipe, related_name='shop_purchase', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        related_name='shop_user',
+        on_delete=models.CASCADE
+    )
+    purchase = models.ForeignKey(
+        Recipe,
+        related_name='shop_purchase',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = 'покупки'
+        verbose_name_plural = 'Покупки'
 
 
 class Subscriptions(models.Model):
@@ -91,3 +119,7 @@ class Subscriptions(models.Model):
         on_delete=models.CASCADE,
         related_name='subscription'
     )
+
+    class Meta:
+        verbose_name = 'подписки'
+        verbose_name_plural = 'Подписки'

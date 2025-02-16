@@ -1,6 +1,25 @@
 version: '3.3'
 services:
 
+  # Это контейнер БД
+  db:
+    # Из какого образа запустить контейнер:
+    image: postgres:13.10
+    # Файл (или список файлов) с переменными окружения
+    env_file: .env
+    # Какой volume подключить для этого контейнера
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # Имя и описание контейнера с бэкендом
+  backend:
+    # Из какого Dockerfile собирать образ для этого контейнера:
+    build: ../backend/
+    env_file: .env
+    # Какие контейнеры нужно запустить до старта этого контейнера:
+    depends_on:
+      - db
+
   frontend:
     container_name: foodgram-front
     build: ../frontend
