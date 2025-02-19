@@ -1,4 +1,4 @@
-#  Django-проект Kittygram: управление котиками.
+#  Django-проект Foodgram.
 
 ![](https://github.com/VladSmyslov/foodgram/actions/workflows/main.yml/badge.svg)
 
