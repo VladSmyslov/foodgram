@@ -201,12 +201,20 @@ class MyUserSerializer(serializers.ModelSerializer):
         return instance
 
     def get_is_subscribed(self, obj):
-        return (
+        if (self.context.get('request')
+           and not self.context['request'].user.is_anonymous):
+            return Subscriptions.objects.filter(
+                owner=self.context['request'].user,
+                subscription=obj
+            ).exists()
+        return False
+
+        """ return (
             Subscriptions.objects.filter(
                 owner=obj.id,
                 subscription=obj
             ).exists()
-        )
+        ) """
 
 
 class CreateSubscribeSerializer(serializers.ModelSerializer):
@@ -235,7 +243,12 @@ class CreateSubscribeSerializer(serializers.ModelSerializer):
         return len(recipes)
 
     def get_is_subscribed(self, obj):
-        return (True)
+        return (
+            self.context.get('request').user.is_authenticated
+            and Subscriptions.objects.filter(
+                owner=self.context['request'].user,
+                subscription=obj).exists()
+        )
 
     def get_recipes(self, obj):
         # request = self.context.get('request')

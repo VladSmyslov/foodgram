@@ -66,6 +66,10 @@ class IngredientsRecipe(models.Model):
     )
     amount = models.IntegerField(validators=[MinValueValidator(1)])
 
+    class Meta:
+        verbose_name = 'Ингредиенты в рецептах'
+        verbose_name_plural = 'Ингредиент в рецепте'
+
     def __str__(self):
         return f'{self.ingredient} {self.amount}'
 

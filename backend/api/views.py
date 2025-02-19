@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
@@ -37,13 +37,16 @@ from api.serializers import (
 )
 
 
+class MyPagiantor(PageNumberPagination):
+    page_size_query_param = 'limit'
+    page_size = 6
+
+
 class RecipesViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    # serializer_class = RecipeListSerializer
-    pagination_class = LimitOffsetPagination
+    pagination_class = MyPagiantor
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    # filterset_fields = ('tags__slug', 'author')
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
@@ -113,9 +116,9 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     def _create_shopping_txt(self, ingredients):
         shopping_list = [
-            (f"{ingredient['name__name']}: "
-             f"{ingredient['total_amount']} "
-             f"{ingredient['name__measurement_unit']}\n")
+            (f"{ingredient['ingredient__name']}: "
+             f"{ingredient['total']} "
+             f"{ingredient['ingredient__measurement_unit']}\n")
             for ingredient in ingredients
         ]
         return '\n'.join(shopping_list) + '\n'
@@ -134,8 +137,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         ).annotate(total=Sum('amount'))
         shopping_list = self._create_shopping_txt(ingredients)
-        return HttpResponse(shopping_list, content_type='text/plain')
-        # return Response(status=status.HTTP_200_OK)
+        filename = 'shop_list.txt'
+        request = HttpResponse(shopping_list, content_type='text/plain')
+        request['Content-Disposition'] = (f'attachment; filename={filename}')
+        return request
 
     @action(
         methods=['get'],
@@ -171,7 +176,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
 class MyUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = MyUserSerializer
-    pagination_class = LimitOffsetPagination
+    pagination_class = MyPagiantor
     permission_classes = [IsAuthenticatedOrReadOnly, ]
 
     def perform_update(self, serializer):
