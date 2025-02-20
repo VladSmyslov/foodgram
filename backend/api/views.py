@@ -78,8 +78,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             serializer = RecipeToFavoriteSerializer(fav_recipe.recipe)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            del_recipe = Favourites.objects.filter(
-                user=user,
+            del_recipe = user.favourites_user.filter(
                 recipe=recipe
             ).first()
             if not del_recipe:
@@ -105,8 +104,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             serializer = RecipeToFavoriteSerializer(purchase.purchase)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            del_purchase = ShopLsit.objects.filter(
-                user=user,
+            del_purchase = user.shop_user.filter(
                 purchase=recipe
             )
             if not del_purchase.exists():
@@ -214,7 +212,6 @@ class MyUserViewSet(UserViewSet):
             )
             if not created or subscription_object == user:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            # subscription.save()
             recipes_limit = request.query_params.get('recipes_limit')
             serializer = CreateSubscribeSerializer(
                 subscription_object,
@@ -222,8 +219,7 @@ class MyUserViewSet(UserViewSet):
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            del_subscription = Subscriptions.objects.filter(
-                owner=user,
+            del_subscription = user.owner.filter(
                 subscription=subscription_object
             )
             if not del_subscription.exists():
