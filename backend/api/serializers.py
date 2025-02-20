@@ -3,8 +3,7 @@ from rest_framework import serializers
 
 import base64
 
-from recipes.models import (Favourites, Ingredient, IngredientsRecipe, Recipe,
-                            ShopLsit, Subscriptions, Tag, User)
+from recipes.models import (Ingredient, IngredientsRecipe, Recipe, Tag, User)
 
 MAX_VALUE_AMOUNT = 32000
 MIN_VALUE_AMOUNT = 1
