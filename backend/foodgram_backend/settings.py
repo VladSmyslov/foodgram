@@ -4,12 +4,10 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECRET_KEY = 'django-insecure-%_#_ngvz25%b106#03znd#_znpm0pi-iq1%v-41yrs2yzd_^ru'
 SECRET_KEY = os.getenv('SECRET_KEY', 'django')
 
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-# ALLOWED_HOSTS = ['51.250.100.54', '127.0.0.1', 'localhost', 'fdgrm.ddns.net']
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 
@@ -67,13 +65,6 @@ CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000', 'https
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-""" DATABASES = {
-    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('POSTGRES_DB', 'django'),
         'USER': os.getenv('POSTGRES_USER', 'django'),
@@ -81,7 +72,7 @@ DATABASES = {
         'HOST': os.getenv('DB_HOST', ''),
         'PORT': os.getenv('DB_PORT', 5432)
     }
-} """
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
