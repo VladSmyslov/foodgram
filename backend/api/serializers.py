@@ -1,9 +1,9 @@
+import base64
+
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
-import base64
-
-from recipes.models import (Ingredient, IngredientsRecipe, Recipe, Tag, User)
+from recipes.models import Ingredient, IngredientsRecipe, Recipe, Tag, User
 
 MAX_VALUE_AMOUNT = 32000
 MIN_VALUE_AMOUNT = 1
@@ -129,11 +129,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             'cooking_time'
         )
 
-    def create(self, validated_data):
-        ingredients = validated_data.pop('ingredients')
-        tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-        recipe.tags.set(tags)
+    def ingredients_recipe_create(self, ingredients, recipe):
         objects = []
         for ingredient in ingredients:
             ingredient_id = ingredient['id']
@@ -147,6 +143,13 @@ class RecipeSerializer(serializers.ModelSerializer):
                 )
             )
         IngredientsRecipe.objects.bulk_create(objects)
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        tags = validated_data.pop('tags')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        self.ingredients_recipe_create(ingredients, recipe)
         return recipe
 
     def update(self, instance, validated_data):
@@ -165,19 +168,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.tags.set(tags)
         IngredientsRecipe.objects.filter(recipe=instance).delete()
         ingredients = validated_data.pop('ingredients')
-        objects = []
-        for ingredient in ingredients:
-            ingredient_id = ingredient['id']
-            amount = ingredient['amount']
-            current_ingredient = Ingredient.objects.get(pk=ingredient_id)
-            objects.append(
-                IngredientsRecipe(
-                    ingredient=current_ingredient,
-                    recipe=instance,
-                    amount=amount
-                )
-            )
-            IngredientsRecipe.objects.bulk_create(objects)
+        self.ingredients_recipe_create(ingredients, instance)
         instance.save()
         return instance
 
@@ -223,8 +214,8 @@ class MyUserSerializer(serializers.ModelSerializer):
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
         if (request
-           and not self.context['request'].user.is_anonymous):
-            user = self.context['request'].user
+           and not request.user.is_anonymous):
+            user = request.user
             return user.owner.filter(subscription=obj).exists()
         return False
 
@@ -250,13 +241,13 @@ class CreateSubscribeSerializer(serializers.ModelSerializer):
         )
 
     def get_recipes_count(self, obj):
-        recipes = Recipe.objects.filter(author=obj)
-        return recipes.count()
+        return obj.recipes.all().count()
 
     def get_is_subscribed(self, obj):
+        request = self.context['request']
         return (
-            self.context['request'].user.is_authenticated
-            and self.context['request'].user.owner.filter(
+            request.user.is_authenticated
+            and request.user.owner.filter(
                 subscription=obj
             ).exists()
         )

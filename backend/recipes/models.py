@@ -39,7 +39,7 @@ class Recipe(models.Model):
         User,
         related_name='recipes',
         on_delete=models.CASCADE,
-        verbose_name='Автор'
+        verbose_name='Автор',
     )
     name = models.CharField('Название', max_length=256)
     image = models.ImageField(

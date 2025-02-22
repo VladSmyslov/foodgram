@@ -1,36 +1,26 @@
 version: '3'
 
-# Перечень volume
 volumes:
   pg_data_production:
   static_volume:
   media_volume:
 
-# Перечень контейнеров
 services:
-  # Имя и описание первого контейнера; имя выбирает разработчик. 
-  # Это контейнер БД
   db:
-    # Из какого образа запустить контейнер:
     image: postgres:13.10
-    # Файл (или список файлов) с переменными окружения
     env_file: .env
-    # Какой volume подключить для этого контейнера
     volumes:
       - pg_data_production:/var/lib/postgresql/data
-  # Имя и описание контейнера с бэкендом
+
   backend:
-    # Из какого Dockerfile собирать образ для этого контейнера:
     image: smvlad/foodgram_backend
     env_file: .env
     volumes:
-      # - static:/data/static
       - static_volume:/backend_static
       - media_volume:/app/media
-    # Какие контейнеры нужно запустить до старта этого контейнера:
     depends_on:
       - db
-  # Имя третьего контейнера. Это контейнер с фронтендом
+
   frontend:
     env_file: .env
     image: smvlad/foodgram_frontend
